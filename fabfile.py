@@ -7,7 +7,7 @@ import urllib2
 
 from fabric.api import (
     env, run, local, put, cd,
-    prompt
+    prompt, settings, parallel
 )
 from fabric.contrib.console import confirm
 from fabric.contrib.files import exists as remote_exists
@@ -35,6 +35,13 @@ def add_key(key):
 #             os.makedirs(local_path)
 #         return func(*args, **kwargs)
 #     return _
+
+
+def ignore_error(func):
+    def _(*args, **kwargs):
+        with settings(warn_only=True):
+            return func(*args, **kwargs)
+    return _
 
 
 def _occur_error(msg):
@@ -111,10 +118,13 @@ def install_pip(remote_path="/opt/resource", python_path="/opt/python/bin/python
         run(python_path + " setup.py install")
 
 
-def download_packages(*args):
-    # TODO(crow): 考虑同时输入多个库的情况
+@ignore_error
+def download_packages(*args, **kwargs):
+    if kwargs.get("with_parallel", False):
+        pass
 
-    # pip install --download /path/to/download sentry 就会把所有 sentry 有关的包全下下来
+    # TODO(crow): make parallel
+    args = [i.lower() for i in args]
 
     src_packages = [i.split('-')[0].lower() for i in os.listdir('src')]
 
@@ -122,6 +132,11 @@ def download_packages(*args):
     for i in args:
         if i in src_packages:
             force_choice = confirm("File exists, force download? ", default=False)
+            if force_choice:
+                # download this package
+                local("pip install --download src " + i)
+        else:
+            local("pip install --download src " + i)
 
 
 def install_package(remote_path="/opt/resource"):
