@@ -72,6 +72,7 @@ def install_python(remote_path="/opt/resource", install_path="/opt/python"):
     # 3. install python
     with cd(remote_path):
         run("tar xvf Python-2.7.8.tgz")
+        run("rm Python-2.7.8.tgz")
 
     with cd(os.path.join(remote_path, "Python-2.7.8")):
         run("./configure --prefix=" + install_path + " && make && make install")
@@ -106,6 +107,7 @@ def install_pip(remote_path="/opt/resource", python_path="/opt/python/bin/python
     # 5. install setuptools
     with cd(remote_path):
         run("tar xvf setuptools-7.0.tar.gz")
+        run("rm setuptools-7.0.tar.gz")
 
     with cd(os.path.join(remote_path, "setuptools-7.0")):
         run(python_path + " setup.py install")
@@ -113,6 +115,7 @@ def install_pip(remote_path="/opt/resource", python_path="/opt/python/bin/python
     # 6. install pip
     with cd(remote_path):
         run("tar xvf pip-1.5.6.tar.gz")
+        run("rm pip-1.5.6.tar.gz")
 
     with cd(os.path.join(remote_path, "pip-1.5.6")):
         run(python_path + " setup.py install")
@@ -123,7 +126,7 @@ def download_packages(*args, **kwargs):
     # TODO(crow): make parallel
     args = [i.lower() for i in args]
 
-    src_packages = [i.split('-')[0].lower() for i in os.listdir('src')]
+    src_packages = [i.split('-')[0].lower() for i in os.listdir(local_path)]
 
     # 1. download all packages
     for i in args:
@@ -131,17 +134,17 @@ def download_packages(*args, **kwargs):
             force_choice = confirm("File exists, force download? ", default=False)
             if force_choice:
                 # download this package
-                local("pip install --download src " + i)
+                local("pip install --download " + local_path + " " + i)
         else:
-            local("pip install --download src " + i)
+            local("pip install --download " + local_path + " " + i)
 
 
 def install_packages(remote_path="/opt/resource", pip_path="/opt/python/bin/pip"):
-    # 1. put src to servers
-    put('src', remote_path)
+    # 1. put local_path to servers
+    put(local_path, remote_path)
 
-    # 2. get all files in src
-    _ = run(os.path.join(remote_path, 'src')).split()
+    # 2. get all files in local_path
+    _ = run(os.path.join(remote_path, local_path)).split()
     src_list = [i.split('-')[0].lower()
                 for i in _
                 if i.split('-')[0].lower() != 'python'
@@ -149,7 +152,7 @@ def install_packages(remote_path="/opt/resource", pip_path="/opt/python/bin/pip"
                 and i.split('-')[0].lower() != 'setuptools']
 
     # 3. pip install
-    [run(pip_path + ' install --no-index -f ' + os.path.join(remote_path, 'src') + ' ' + i)
+    [run(pip_path + ' install --no-index -f ' + os.path.join(remote_path, local_path) + ' ' + i)
      for i in src_list]
 
 
