@@ -7,7 +7,7 @@ import urllib2
 
 from fabric.api import (
     env, run, local, put, cd,
-    prompt, settings, parallel
+    prompt, settings
 )
 from fabric.contrib.console import confirm
 from fabric.contrib.files import exists as remote_exists
@@ -120,9 +120,6 @@ def install_pip(remote_path="/opt/resource", python_path="/opt/python/bin/python
 
 @ignore_error
 def download_packages(*args, **kwargs):
-    if kwargs.get("with_parallel", False):
-        pass
-
     # TODO(crow): make parallel
     args = [i.lower() for i in args]
 
@@ -139,11 +136,28 @@ def download_packages(*args, **kwargs):
             local("pip install --download src " + i)
 
 
-def install_package(remote_path="/opt/resource"):
-    # pip install --no-index -f /path/to/packages sentry
-    # 有个办法是用 pip --download 下载所有的包，上传上去，然后 pip install --no-index --find-links <local path> sentry，从本地放这些包的路径
+def install_packages(remote_path="/opt/resource", pip_path="/opt/python/bin/pip"):
+    # 1. put src to servers
+    put('src', remote_path)
 
-    # 如果没有path则mkdir -p
-    # 判断有没有python和pip
-    # 如果没有则调用install_python和install_pip安装python和pip
-    pass
+    # 2. get all files in src
+    _ = run(os.path.join(remote_path, 'src')).split()
+    src_list = [i.split('-')[0].lower()
+                for i in _
+                if i.split('-')[0].lower() != 'python'
+                and i .split('-')[0].lower() != 'pip']
+
+    # 3. pip install
+    [run(pip_path + ' install --no-index -f ' + os.path.join(remote_path, 'src') + ' ' + i)
+     for i in src_list]
+
+
+def install_pys(*args):
+    # install_pip
+    install_pip()
+
+    # download_packages
+    download_packages(*args)
+
+    # install_packages
+    install_packages()
