@@ -145,7 +145,8 @@ def install_packages(remote_path="/opt/resource", pip_path="/opt/python/bin/pip"
     src_list = [i.split('-')[0].lower()
                 for i in _
                 if i.split('-')[0].lower() != 'python'
-                and i .split('-')[0].lower() != 'pip']
+                and i.split('-')[0].lower() != 'pip'
+                and i.split('-')[0].lower() != 'setuptools']
 
     # 3. pip install
     [run(pip_path + ' install --no-index -f ' + os.path.join(remote_path, 'src') + ' ' + i)
