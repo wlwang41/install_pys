@@ -144,7 +144,7 @@ def install_packages(remote_path="/opt/resource", pip_path="/opt/python/bin/pip"
     put(local_path, remote_path)
 
     # 2. get all files in local_path
-    _ = run(os.path.join(remote_path, local_path)).split()
+    _ = run('ls ' + os.path.join(remote_path, local_path)).split()
     src_list = [i.split('-')[0].lower()
                 for i in _
                 if i.split('-')[0].lower() != 'python'
