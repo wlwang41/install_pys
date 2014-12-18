@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
 
-servers = ["root@192.168.110.78", "root@192.168.109.208", "root@10.10.127.50", "root@192.168.109.224"]
+servers = ["root@123.57.76.18"]
 
 local_path = "src"

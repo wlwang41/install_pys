@@ -59,6 +59,9 @@ def _download_file(url, path):
 
 
 def install_python(remote_path="/opt/resource", install_path="/opt/python"):
+    if not os.path.exists(remote_path):
+        os.makedirs(remote_path)
+
     # 0. check if python package exists in local_path
     python_path = os.path.join(local_path, "Python-2.7.8.tgz")
 
